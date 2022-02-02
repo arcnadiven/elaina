@@ -19,12 +19,11 @@ var cfgFile string
 var rootCmd = &cobra.Command{
 	Use:   "elaina",
 	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
+	Long: `Elaina is a out-of-tree persistentvolume plugin base on MySQL in kubernetes
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+This application is a grpc server for CSI client, 
+it will bound the persistentvolume to a localpath
+and insert a record to MySQL`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },

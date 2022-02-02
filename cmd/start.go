@@ -13,13 +13,12 @@ import (
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "start will run a grpc server for CSI client",
+	Long: `Elaina is a out-of-tree persistentvolume plugin base on MySQL in kubernetes
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+This application is a grpc server for CSI client, 
+it will bound the persistentvolume to a localpath
+and insert a record to MySQL`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("start called")
 	},
