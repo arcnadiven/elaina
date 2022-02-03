@@ -5,7 +5,8 @@ Copyright © 2022 arcnadiven@github.com
 package cmd
 
 import (
-	"fmt"
+	"github.com/arcnadiven/elaina/backstore"
+	"github.com/arcnadiven/elaina/tracelog"
 
 	"github.com/spf13/cobra"
 )
@@ -19,10 +20,17 @@ var startCmd = &cobra.Command{
 This application is a grpc server for CSI client, 
 it will bound the persistentvolume to a localpath
 and insert a record to MySQL`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("start called")
-	},
+	Run: Start,
 }
+
+var (
+	// TODO: add log config later
+	logfile string
+
+	dbUser, dbPassword, dbHost, dbPort, dbName string
+
+	dbArgs map[string]string
+)
 
 func init() {
 	rootCmd.AddCommand(startCmd)
@@ -36,4 +44,38 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// startCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	// log file flags
+	startCmd.Flags().StringVar(&logfile, "log-file", "", "output all log to this file if non-empty")
+
+	// database flags
+	startCmd.Flags().StringVar(&dbUser, "db-user", "root", "database username for establish connection")
+	startCmd.Flags().StringVar(&dbPassword, "db-passwd", "", "database user password for establish connection")
+	startCmd.Flags().StringVar(&dbHost, "db-host", "localhost", "database server ip for establish connection")
+	startCmd.Flags().StringVar(&dbPort, "db-port", "3306", "database server port for establish connection")
+	startCmd.Flags().StringVar(&dbName, "db-name", "", "database name for establish connection")
+	startCmd.Flags().StringToStringVar(&dbArgs, "db-args", nil, "database connect arguments for establish connection")
+}
+
+func Start(cmd *cobra.Command, args []string) {
+	bl := tracelog.NewBaseLogger(logfile)
+	bl.Infoln(
+		dbUser,
+		dbPassword,
+		dbHost,
+		dbPort,
+		dbName,
+		dbArgs,
+	)
+	conf := &backstore.ConnConfig{
+		Username:     dbUser,
+		Password:     dbPassword,
+		Host:         dbHost,
+		Port:         dbPort,
+		DataBaseName: dbName,
+		ConnArgs:     dbArgs,
+	}
+	if _, err := backstore.NewSQLClient(bl, conf); err != nil {
+		bl.Errorln(err)
+	}
 }
