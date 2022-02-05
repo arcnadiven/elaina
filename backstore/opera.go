@@ -1,6 +1,7 @@
 package backstore
 
 import (
+	"fmt"
 	"github.com/arcnadiven/elaina/models"
 	"gorm.io/gorm"
 )
@@ -8,6 +9,7 @@ import (
 type StoreOperator interface {
 	InsertPersistentVolume(vol *models.CSIPersiVol) error
 	QueryPersistentVolume(volId string) (*models.CSIPersiVol, error)
+	QueryPersistentVolumeByName(volName string) (*models.CSIPersiVol, error)
 	UpdatePersistentVolume(vol *models.CSIPersiVol) error
 	DeletePersistentVolume(volId string) error
 }
@@ -26,9 +28,24 @@ func (op *SQLOperator) InsertPersistentVolume(vol *models.CSIPersiVol) error {
 
 func (op *SQLOperator) QueryPersistentVolume(volId string) (*models.CSIPersiVol, error) {
 	vol := &models.CSIPersiVol{}
-	if err := op.client.Raw("select * from ? where volume_id = ?", vol.TableName(), volId).Scan(vol).Error; err != nil {
+	if err := op.client.Raw(fmt.Sprintf("select * from %s where volume_id = ?", vol.TableName()), volId).Scan(vol).Error; err != nil {
 		op.log.Errorln(err)
 		return nil, err
+	}
+	if vol.ID == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+	return vol, nil
+}
+
+func (op *SQLOperator) QueryPersistentVolumeByName(volName string) (*models.CSIPersiVol, error) {
+	vol := &models.CSIPersiVol{}
+	if err := op.client.Raw(fmt.Sprintf("select * from %s where persi_vol = ?", vol.TableName()), volName).Scan(vol).Error; err != nil {
+		op.log.Errorln(err)
+		return nil, err
+	}
+	if vol.ID == 0 {
+		return nil, gorm.ErrRecordNotFound
 	}
 	return vol, nil
 }

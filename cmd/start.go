@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"github.com/arcnadiven/elaina/backstore"
+	"github.com/arcnadiven/elaina/server"
 	"github.com/arcnadiven/elaina/tracelog"
 
 	"github.com/spf13/cobra"
@@ -75,7 +76,15 @@ func Start(cmd *cobra.Command, args []string) {
 		DataBaseName: dbName,
 		ConnArgs:     dbArgs,
 	}
-	if _, err := backstore.NewSQLClient(bl, conf); err != nil {
+	sqlCli, err := backstore.NewSQLClient(bl, conf)
+	if err != nil {
 		bl.Errorln(err)
+		return
+	}
+	sqlOpera := backstore.NewStoreOperator(sqlCli)
+	srv := server.NewElainaServer(bl, sqlOpera)
+	if err := srv.RunGRPCServer(); err != nil {
+		bl.Errorln(err)
+		return
 	}
 }
