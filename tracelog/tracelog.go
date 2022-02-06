@@ -1,6 +1,9 @@
 package tracelog
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const (
 	prefix_format = " %s(%s) "
@@ -19,36 +22,49 @@ type TraceLogger interface {
 
 type TraceLoggerImpl struct {
 	logger BaseLogger
-	cache  map[string]string
+	cache  []traceMessage // change map to list for sequences
 	prefix string
+}
+
+type traceMessage struct {
+	Key, Value string
 }
 
 func NewTraceLogger(baseLog BaseLogger) TraceLogger {
 	return &TraceLoggerImpl{
 		logger: baseLog,
-		cache:  map[string]string{},
+		cache:  []traceMessage{},
 		prefix: "",
 	}
 }
 
 func (l *TraceLoggerImpl) WithValue(key, value string) {
-	isChange := false
-	if val, ok := l.cache[key]; ok {
-		if val != value {
-			isChange = true
+	isChanged, isExist := true, false
+	for idx, msg := range l.cache {
+		if msg.Key == key {
+			isExist = true
+			if msg.Value == value {
+				isChanged = false
+			}
+			l.cache[idx].Value = value
 		}
 	}
-	if isChange {
-		prefix := ""
-		for k, v := range l.cache {
-			prefix += fmt.Sprintf(prefix_format, k, v)
+	if !isExist {
+		l.cache = append(l.cache, traceMessage{Key: key, Value: value})
+	}
+
+	// update prefix
+	if isChanged {
+		tvList := []string{}
+		for _, msg := range l.cache {
+			tvList = append(tvList, fmt.Sprintf(prefix_format, msg.Key, msg.Value))
 		}
-		l.prefix = prefix
+		l.prefix = strings.Join(tvList, ",")
 	}
 }
 
 func (l *TraceLoggerImpl) CleanUp() {
-	l.cache = map[string]string{}
+	l.cache = []traceMessage{}
 	l.prefix = ""
 }
 
