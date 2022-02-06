@@ -12,7 +12,7 @@ type CSIPersiVol struct {
 	NodeID             string        `gorm:"column:node_id;size:255"`
 	GlobalMount        string        `gorm:"column:global_mount"`
 	SubMount           string        `gorm:"column:sub_mount"`
-	Size               int64         `gorm:"column:size;comment:unit: GigaBytes"`
+	Size               string        `gorm:"column:size;not null;size:255"`
 	CreateAt           time.Time     `gorm:"column:create_at;autoCreateTime:milli"`
 	UpdateAt           time.Time     `gorm:"column:update_at;autoUpdateTime:milli"`
 	State              PersiVolState `gorm:"column:state;size:32"`

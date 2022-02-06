@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/arcnadiven/elaina/models"
 	"github.com/arcnadiven/elaina/tracelog"
+	"github.com/arcnadiven/elaina/utils"
 	"github.com/container-storage-interface/spec/lib/go/csi"
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
@@ -24,7 +25,7 @@ func (es *ElainaServerImpl) CreateVolume(ctx context.Context, req *csi.CreateVol
 		es.bl.Infof("volume %s already exist", req.Name)
 		return &csi.CreateVolumeResponse{
 			Volume: &csi.Volume{
-				CapacityBytes: persi_vol.Size,
+				CapacityBytes: utils.QuantityToBytes(persi_vol.Size),
 				VolumeId:      persi_vol.VolumeID,
 			},
 		}, nil
@@ -42,7 +43,7 @@ func (es *ElainaServerImpl) CreateVolume(ctx context.Context, req *csi.CreateVol
 	persi_vol := &models.CSIPersiVol{
 		VolumeID:     vol_id,
 		PersiVolName: req.GetName(),
-		Size:         req.GetCapacityRange().RequiredBytes,
+		Size:         utils.BytesToQuantity(req.GetCapacityRange().GetRequiredBytes()),
 		State:        models.Persi_Vol_Created,
 	}
 	if err := es.opera.InsertPersistentVolume(persi_vol); err != nil {
