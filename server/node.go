@@ -10,7 +10,8 @@ import (
 )
 
 const (
-	nodeId            = "minikube.deepin.linux"
+	// TODO: move these const to start flag
+	nodeId            = "deepin"
 	maxVolumesPerNode = 100
 )
 
@@ -31,7 +32,7 @@ func (es *ElainaServerImpl) NodeStageVolume(ctx context.Context, req *csi.NodeSt
 	}
 	if vol.State != models.Persi_Vol_Attached {
 		if vol.State == models.Persi_Vol_Mounted {
-			return nil, nil
+			return &csi.NodeStageVolumeResponse{}, nil
 		}
 		tl.Errorf("persi-vol state error: %s", vol.State)
 		return nil, status.Error(codes.Unavailable, "persi-vol state error")
@@ -42,7 +43,8 @@ func (es *ElainaServerImpl) NodeStageVolume(ctx context.Context, req *csi.NodeSt
 		tl.Errorln(err)
 		return nil, status.Error(codes.Unavailable, "update persi-vol failed")
 	}
-	return nil, nil
+	tl.Infoln("stage persi-vol success")
+	return &csi.NodeStageVolumeResponse{}, nil
 }
 
 func (es *ElainaServerImpl) NodeUnstageVolume(ctx context.Context, req *csi.NodeUnstageVolumeRequest) (*csi.NodeUnstageVolumeResponse, error) {
@@ -62,7 +64,7 @@ func (es *ElainaServerImpl) NodeUnstageVolume(ctx context.Context, req *csi.Node
 	}
 	if vol.State != models.Persi_Vol_Mounted {
 		if vol.State == models.Persi_Vol_Attached {
-			return nil, nil
+			return &csi.NodeUnstageVolumeResponse{}, nil
 		}
 		tl.Errorf("persi-vol state error: %s", vol.State)
 		return nil, status.Error(codes.Unavailable, "persi-vol state error")
@@ -73,7 +75,8 @@ func (es *ElainaServerImpl) NodeUnstageVolume(ctx context.Context, req *csi.Node
 		tl.Errorln("update persi-vol failed")
 		return nil, status.Error(codes.Unavailable, "update persi-vol failed")
 	}
-	return nil, status.Error(codes.Unimplemented, "")
+	tl.Infoln("unstage persi-vol success")
+	return &csi.NodeUnstageVolumeResponse{}, nil
 }
 
 func (es *ElainaServerImpl) NodePublishVolume(ctx context.Context, req *csi.NodePublishVolumeRequest) (*csi.NodePublishVolumeResponse, error) {
@@ -98,7 +101,7 @@ func (es *ElainaServerImpl) NodePublishVolume(ctx context.Context, req *csi.Node
 	}
 	if vol.State != models.Persi_Vol_Mounted {
 		if vol.State == models.Persi_Vol_Published {
-			return nil, nil
+			return &csi.NodePublishVolumeResponse{}, nil
 		}
 		tl.Errorf("persi-vol state error: %s", vol.State)
 		return nil, status.Error(codes.Unavailable, "persi-vol state error")
@@ -109,7 +112,8 @@ func (es *ElainaServerImpl) NodePublishVolume(ctx context.Context, req *csi.Node
 		tl.Errorln("update persi-vol failed")
 		return nil, status.Error(codes.Unavailable, "update persi-vol failed")
 	}
-	return nil, nil
+	tl.Infoln("publish persi-vol success")
+	return &csi.NodePublishVolumeResponse{}, nil
 }
 
 func (es *ElainaServerImpl) NodeUnpublishVolume(ctx context.Context, req *csi.NodeUnpublishVolumeRequest) (*csi.NodeUnpublishVolumeResponse, error) {
@@ -129,7 +133,7 @@ func (es *ElainaServerImpl) NodeUnpublishVolume(ctx context.Context, req *csi.No
 	}
 	if vol.State != models.Persi_Vol_Published {
 		if vol.State == models.Persi_Vol_Mounted {
-			return nil, nil
+			return &csi.NodeUnpublishVolumeResponse{}, nil
 		}
 		tl.Errorf("persi-vol state error: %s", vol.State)
 		return nil, status.Error(codes.Unavailable, "persi-vol state error")
@@ -140,7 +144,8 @@ func (es *ElainaServerImpl) NodeUnpublishVolume(ctx context.Context, req *csi.No
 		tl.Errorln("update persi-vol failed")
 		return nil, status.Error(codes.Unavailable, "update persi-vol failed")
 	}
-	return nil, nil
+	tl.Infoln("unpublish persi-vol success")
+	return &csi.NodeUnpublishVolumeResponse{}, nil
 }
 
 func (es *ElainaServerImpl) NodeGetVolumeStats(context.Context, *csi.NodeGetVolumeStatsRequest) (*csi.NodeGetVolumeStatsResponse, error) {

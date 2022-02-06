@@ -1,6 +1,7 @@
 package backstore
 
 import (
+	"errors"
 	"fmt"
 	"github.com/arcnadiven/elaina/models"
 	"gorm.io/gorm"
@@ -51,12 +52,19 @@ func (op *SQLOperator) QueryPersistentVolumeByName(volName string) (*models.CSIP
 }
 
 func (op *SQLOperator) UpdatePersistentVolume(vol *models.CSIPersiVol) error {
-	return op.client.Model(&models.CSIPersiVol{}).Updates(vol).Error
+	if vol.VolumeID == "" {
+		return errors.New("update failed volume id cant be empty")
+	}
+	return op.client.Model(&models.CSIPersiVol{}).Where("volume_id = ?", vol.VolumeID).Updates(vol).Error
 }
 
 func (op *SQLOperator) DeletePersistentVolume(volId string) error {
-	if _, err := op.QueryPersistentVolume(volId); err == gorm.ErrRecordNotFound {
-		return nil
+	persi_vol, err := op.QueryPersistentVolume(volId)
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil
+		}
+		return err
 	}
-	return op.client.Model(&models.CSIPersiVol{}).Delete(volId).Error
+	return op.client.Model(&models.CSIPersiVol{}).Delete(persi_vol).Error
 }

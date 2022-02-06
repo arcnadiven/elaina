@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elaina-stateful
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      apps: elaina
+  template:
+    metadata:
+      labels:
+        apps: elaina
+    spec:
+      containers:
+        - name: my-busybox
+          image: busybox
+          volumeMounts:
+            - mountPath: "/data"
+              name: elaina-persi-vol
+          command: [ "tail", "-f","/dev/null" ]
+  serviceName: elaina-service
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: elaina-persi-vol
+        namespace: default
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: csi-elaina

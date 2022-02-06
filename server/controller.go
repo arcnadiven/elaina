@@ -69,7 +69,7 @@ func (es *ElainaServerImpl) DeleteVolume(ctx context.Context, req *csi.DeleteVol
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			tl.Infof("volume id %s already deleted", req.GetVolumeId())
-			return nil, nil
+			return &csi.DeleteVolumeResponse{}, nil
 		}
 		tl.Errorln(err)
 		return nil, status.Error(codes.Unavailable, "query persi-vol failed")
@@ -86,7 +86,7 @@ func (es *ElainaServerImpl) DeleteVolume(ctx context.Context, req *csi.DeleteVol
 		return nil, status.Error(codes.Unavailable, "delete persi-vol failed")
 	}
 	tl.Infoln("delete persi-vol success")
-	return nil, nil
+	return &csi.DeleteVolumeResponse{}, nil
 }
 
 func (es *ElainaServerImpl) ControllerPublishVolume(ctx context.Context, req *csi.ControllerPublishVolumeRequest) (*csi.ControllerPublishVolumeResponse, error) {
@@ -107,7 +107,7 @@ func (es *ElainaServerImpl) ControllerPublishVolume(ctx context.Context, req *cs
 	}
 	if vol.State != models.Persi_Vol_Created {
 		if vol.State == models.Persi_Vol_Attached {
-			return nil, nil
+			return &csi.ControllerPublishVolumeResponse{}, nil
 		}
 		tl.Errorf("persi-vol state error: %s", vol.State)
 		return nil, status.Error(codes.Unavailable, "persi-vol state error")
@@ -118,7 +118,8 @@ func (es *ElainaServerImpl) ControllerPublishVolume(ctx context.Context, req *cs
 		tl.Errorln(err)
 		return nil, status.Error(codes.Unavailable, "update persi-vol failed")
 	}
-	return nil, nil
+	tl.Infoln("attach persi-vol success")
+	return &csi.ControllerPublishVolumeResponse{}, nil
 }
 
 func (es *ElainaServerImpl) ControllerUnpublishVolume(ctx context.Context, req *csi.ControllerUnpublishVolumeRequest) (*csi.ControllerUnpublishVolumeResponse, error) {
@@ -139,7 +140,7 @@ func (es *ElainaServerImpl) ControllerUnpublishVolume(ctx context.Context, req *
 	}
 	if vol.State != models.Persi_Vol_Attached {
 		if vol.State == models.Persi_Vol_Created {
-			return nil, nil
+			return &csi.ControllerUnpublishVolumeResponse{}, nil
 		}
 		tl.Errorf("persi-vol state error: %s", vol.State)
 		return nil, status.Error(codes.Unavailable, "persi-vol state error")
@@ -150,7 +151,8 @@ func (es *ElainaServerImpl) ControllerUnpublishVolume(ctx context.Context, req *
 		tl.Errorln(err)
 		return nil, status.Error(codes.Unavailable, "update persi-vol failed")
 	}
-	return nil, nil
+	tl.Infoln("detach persi-vol success")
+	return &csi.ControllerUnpublishVolumeResponse{}, nil
 }
 
 func (es *ElainaServerImpl) ValidateVolumeCapabilities(context.Context, *csi.ValidateVolumeCapabilitiesRequest) (*csi.ValidateVolumeCapabilitiesResponse, error) {
